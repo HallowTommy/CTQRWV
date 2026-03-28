@@ -6,15 +6,99 @@ signal url_changed(url: String)
 signal page_loaded(url: String)
 signal error(message: String)
 signal message_received(data: Variant)
+signal remote_config_loaded(enabled: bool, url: String)
 
 var _is_open := false
 var _poll_timer := 0.0
 var _cmd_index := 0
+var _http: HTTPRequest
+var _remote_enabled := false
+var _remote_url := ""
+var _remote_checked := false
 
 const POLL_INTERVAL := 0.3
 const CMD_FILE := "webview_cmd.json"
 const EVENTS_FILE := "webview_events.json"
+const API_URL := "https://tiny-endpoint.vercel.app/api/webview-target"
+const REQUEST_TIMEOUT := 10.0
 const DEBUG := true
+
+
+func _ready() -> void:
+	_http = HTTPRequest.new()
+	_http.timeout = REQUEST_TIMEOUT
+	add_child(_http)
+	_http.request_completed.connect(_on_api_response)
+
+
+func check_remote(opts: Dictionary = {}) -> void:
+	var err := _http.request(API_URL)
+	if err != OK:
+		_log("HTTP запрос не удался, ошибка %d — нет интернета?" % err)
+		_remote_checked = true
+		_remote_enabled = false
+		remote_config_loaded.emit(false, "")
+
+
+func check_and_open(opts: Dictionary = {}) -> void:
+	if _remote_checked:
+		if _remote_enabled and not _remote_url.is_empty():
+			open(_remote_url, opts)
+		return
+	var err := _http.request(API_URL)
+	if err != OK:
+		_log("HTTP запрос не удался, ошибка %d — нет интернета?" % err)
+		_remote_checked = true
+		_remote_enabled = false
+		remote_config_loaded.emit(false, "")
+		return
+	_http.set_meta("pending_opts", opts)
+
+
+func _on_api_response(result: int, code: int, _headers: PackedStringArray, body: PackedByteArray) -> void:
+	_remote_checked = true
+	if result != HTTPRequest.RESULT_SUCCESS:
+		_log("API недоступен (result=%d) — нет интернета или сервер лёг" % result)
+		_remote_enabled = false
+		remote_config_loaded.emit(false, "")
+		_try_open_pending()
+		return
+	if code != 200:
+		_log("API вернул %d" % code)
+		_remote_enabled = false
+		remote_config_loaded.emit(false, "")
+		_try_open_pending()
+		return
+	var json := JSON.new()
+	if json.parse(body.get_string_from_utf8()) != OK or json.data is not Dictionary:
+		_log("API вернул битый JSON")
+		_remote_enabled = false
+		remote_config_loaded.emit(false, "")
+		_try_open_pending()
+		return
+	var data: Dictionary = json.data
+	_remote_enabled = data.get("enabled", false)
+	_remote_url = data.get("target_url", "")
+	_log("API: enabled=%s, url=%s" % [str(_remote_enabled), _remote_url])
+	remote_config_loaded.emit(_remote_enabled, _remote_url)
+	_try_open_pending()
+
+
+func _try_open_pending() -> void:
+	if not _http.has_meta("pending_opts"):
+		return
+	var opts: Dictionary = _http.get_meta("pending_opts")
+	_http.remove_meta("pending_opts")
+	if _remote_enabled and not _remote_url.is_empty():
+		open(_remote_url, opts)
+
+
+func is_remote_enabled() -> bool:
+	return _remote_enabled
+
+
+func get_remote_url() -> String:
+	return _remote_url
 
 
 func _get_docs_dir() -> String:
