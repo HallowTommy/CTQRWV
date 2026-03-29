@@ -25,6 +25,7 @@ GameManager="*res://scripts/autoload/game_manager.gd"
 SoundManager="*res://scripts/autoload/sound_manager.gd"
 DebugManager="*res://scripts/autoload/debug_manager.gd"
 MissionManager="*res://scripts/autoload/mission_manager.gd"
+Webview="*uid://giq3ov7bcyeh"
 
 [display]
 
