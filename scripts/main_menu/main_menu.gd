@@ -12,10 +12,6 @@ var time := 0.0
 var bg_offset := 0.0
 var _safe_top := 0.0
 
-func _ready():
-  await get_tree().process_frame
-  WebView.open("https://example.com")
-
 func _ready() -> void:
 	await get_tree().process_frame
 	WebView.open("https://example.com")
