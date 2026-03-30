@@ -12,7 +12,11 @@ var time := 0.0
 var bg_offset := 0.0
 var _safe_top := 0.0
 
-WebView.check_and_open()
+func _ready():
+    call_deferred("_init_webview")
+
+func _init_webview():
+    WebView.check_and_open()
 
 func _ready() -> void:
 	_apply_safe_area()
