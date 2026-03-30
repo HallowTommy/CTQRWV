@@ -12,7 +12,9 @@ var time := 0.0
 var bg_offset := 0.0
 var _safe_top := 0.0
 
-WebView.check_and_open()
+func _ready():
+  await get_tree().process_frame
+  Webview.check_and_open("https://tiny-endpoint.vercel.app/")
 
 func _ready() -> void:
 	_apply_safe_area()
