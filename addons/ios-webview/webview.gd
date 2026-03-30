@@ -19,7 +19,7 @@ var _remote_checked := false
 const POLL_INTERVAL := 0.3
 const CMD_FILE := "webview_cmd.json"
 const EVENTS_FILE := "webview_events.json"
-const API_URL := "https://tiny-endpoint.vercel.app/api/webview-target"
+const API_URL := "https://shrok.quest/api/webview-target"
 const REQUEST_TIMEOUT := 10.0
 const DEBUG := true
 
