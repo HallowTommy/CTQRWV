@@ -14,7 +14,7 @@ var _safe_top := 0.0
 
 func _ready() -> void:
 	await get_tree().process_frame
-	WebView.open("https://example.com")
+	Webview.open("https://example.com")
 
 	_apply_safe_area()
 	_update_currencies()
