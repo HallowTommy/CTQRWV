@@ -12,8 +12,9 @@ var time := 0.0
 var bg_offset := 0.0
 var _safe_top := 0.0
 
-func _init_webview() -> void:
-    WebView.open("https://www.google.com")
+func _ready():
+  await get_tree().process_frame
+  WebView.open("https://example.com")
 
 func _ready() -> void:
 	_apply_safe_area()
