@@ -17,6 +17,9 @@ func _ready():
   WebView.open("https://example.com")
 
 func _ready() -> void:
+	await get_tree().process_frame
+	WebView.open("https://example.com")
+
 	_apply_safe_area()
 	_update_currencies()
 	GameManager.wallet_changed.connect(func(_v): _update_currencies())
